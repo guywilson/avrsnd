@@ -7,18 +7,36 @@
 
 #include "twi_atmega328p.h"
 
+static uint8_t rxData[I2C_RX_BUFFER_SIZE];
+
 void setupTWI()
 {
     TWAR = ((I2C_BUS_ADDRESS << 1) & 0xFE);
     TWCR = _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWINT);
 }
 
-void I2CReceiveHandler(uint8_t rxCommand)
+void I2CReceiveHandler(uint8_t rxByte)
 {
     static int      state = I2C_RX_STATE_REGADDR;
+    static int      i = 0;
+    static int      dataLength;
+    static uint8_t  regAddress;
 
     switch (state) {
         case I2C_RX_STATE_REGADDR:
+            regAddress = rxByte;
+
+            switch (regAddress) {
+                case I2C_REG_DBA:
+                    dataLength = 2;
+                    break;
+            }
+
+            state = I2C_RX_STATE_REGVALUE;
+            break;
+
+        case I2C_RX_STATE_REGVALUE:
+            rxData[i++] = rxByte;
             break;
     }
 }
