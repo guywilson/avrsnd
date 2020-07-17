@@ -12,6 +12,7 @@
 #include "rtc_atmega328p.h"
 #include "adc_atmega328p.h"
 #include "adctask.h"
+#include "version.h"
 
 void setup(void)
 {
