@@ -9,7 +9,7 @@
 
 void HeartbeatTask(PTASKPARM p)
 {
-	static uint8_t on = 0;
+	static uint8_t on = 1;
 	
     if (on) {
 		/* set pin 5 low to turn led off */
