@@ -7,13 +7,20 @@
 #include "adctask.h"
 #include "taskdef.h"
 #include "adc_atmega328p.h"
+#include "rmslookup.h"
 
 void ADCTask(PTASKPARM p)
 {
-	uint16_t rms = *(uint16_t *)p;
+	static int		i = 0;
+	static uint32_t	rmsSum = 0;
+	uint32_t		avgRMS;
+	uint16_t 		peak = *(uint16_t *)p;
 
-	/*
-	** Trigger next conversion...
-	*/
-	triggerADC();
+	rmsSum += rmsLookup[peak];
+
+	i++;
+
+	if (i == RMS_AVG_SAMPLE_SIZE) {
+		avgRMS = rmsSum >> 7;
+	}
 }

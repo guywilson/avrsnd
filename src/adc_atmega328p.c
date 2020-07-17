@@ -12,12 +12,12 @@
 
 #define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
 
-static uint16_t rms;
+static uint16_t peakValue = 0;
 
 void setupADC(void)
 {
 	ADMUX	= _BV(REFS0) | ADC_CHANNEL0;
-	ADCSRA	= _BV(ADEN) | _BV(ADIE) | ADC_PRESCALER_DIV128;
+	ADCSRA	= _BV(ADEN) | _BV(ADIE) | ADC_PRESCALER_DIV64;
 }
 
 /*
@@ -25,7 +25,6 @@ void setupADC(void)
 */
 void handleADConversionComplete()
 {
-	static uint16_t		peak = 0;
 	static int			i = 0;
 	uint16_t			value;
 	
@@ -43,18 +42,18 @@ void handleADConversionComplete()
 	*/
 	value = (value < ADC_ZERO_POINT) ? (ADC_ZERO_POINT - value) : (value - ADC_ZERO_POINT);
 
-	if (value > peak) {
-		peak = value;
+	if (value > peakValue) {
+		peakValue = value;
 	}
 
 	i++;
+	
+	triggerADC();
 
 	if (i == ADC_WINDOW_SIZE) {
-		rms = rmsLookup[peak];
+		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&peakValue);
 
 		i = 0;
-		peak = 0;
-
-		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&rms);
+		peakValue = 0;
 	}
 }

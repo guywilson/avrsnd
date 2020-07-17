@@ -6,6 +6,7 @@
 
 #include "rtc_atmega328p.h"
 #include "adc_atmega328p.h"
+#include "twi_atmega328p.h"
 
 /*
 ** Vector Num	Interrupt Definition					Vector Name
@@ -210,7 +211,7 @@ ISR(ANALOG_COMP_vect, ISR_BLOCK) {
  * Two-wire Serial Interface
  */
 ISR(TWI_vect, ISR_BLOCK) {
-	__defaultHandler();
+	handleTWIByteRxTx();
 }
 
 /*
