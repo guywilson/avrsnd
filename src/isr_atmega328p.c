@@ -211,7 +211,7 @@ ISR(ANALOG_COMP_vect, ISR_BLOCK) {
  * Two-wire Serial Interface
  */
 ISR(TWI_vect, ISR_BLOCK) {
-	handleTWIByteRxTx();
+	handleTWI();
 }
 
 /*

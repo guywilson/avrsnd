@@ -8,6 +8,9 @@
 #include "taskdef.h"
 #include "adc_atmega328p.h"
 #include "rmslookup.h"
+#include "dbalookup.h"
+
+DECIMAL2DIGIT dbA = {0, 0};
 
 void ADCTask(PTASKPARM p)
 {
@@ -22,5 +25,7 @@ void ADCTask(PTASKPARM p)
 
 	if (i == RMS_AVG_SAMPLE_SIZE) {
 		avgRMS = rmsSum >> 7;
+
+		dbA = dbaLookup[avgRMS];
 	}
 }

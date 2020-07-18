@@ -14,6 +14,6 @@
 #define I2C_REG_DBA                 0xF2
 
 void setupTWI();
-void handleTWIByteRxTx();
+void handleTWI();
 
 #endif

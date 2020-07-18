@@ -46,7 +46,7 @@ void I2CTransmitHandler()
 
 }
 
-void handleTWIByteRxTx()
+void handleTWI()
 {
     uint8_t     status;
 
