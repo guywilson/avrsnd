@@ -12,10 +12,16 @@
 *
 * I2C Write
 * ---------------------
+* In order to write to a register, first the register address must be sent
+* in write mode, then send pairs of register address and register data.
 * 
-*  --- ------------------- --- --- --------------- --- --------------- --- ----
-* | S | Worker address    | W | A | Register addr | A | Register data | A | ST |
-*  --- ------------------- --- --- --------------- --- --------------- --- ----
+*  --- ------------------- --- --- --------------- --- --------------- --- 
+* | S | Worker address    | W | A | Register addr | A | Register data | A |
+*  --- ------------------- --- --- --------------- --- --------------- --- 
+* 
+*                                   --------------- --- --------------- --- ----
+*                                  | Register addr | A | Register data | A | ST |
+*                                   --------------- --- --------------- --- ----
 *
 * I2C Read
 * ---------------------
