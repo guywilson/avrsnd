@@ -53,9 +53,9 @@ int main(void)
 
 	scheduleTask(
 			TASK_WDT, 
-			rtc_val_ms(250), 
+			rtc_val_ms(125), 
 			NULL);
-			
+
 	scheduleTask(
 			TASK_HEARTBEAT,
 			rtc_val_ms(50),

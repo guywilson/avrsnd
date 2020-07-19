@@ -82,7 +82,7 @@ void setupWDT()
 	WDTCSR |= _BV(WDCE) | _BV(WDE);
 
 	/*
-	 * Enable the Watchdog and set prescaler for a 2 sec timeout...
+	 * Enable the Watchdog and set prescaler for a 250ms timeout...
 	 */
-	WDTCSR = _BV(WDE) | _BV(WDP2) | _BV(WDP1) | _BV(WDP0);
+	WDTCSR = _BV(WDE) | _BV(WDP2);
 }
