@@ -47,6 +47,7 @@
 #include <scheduler.h>
 
 #include "adctask.h"
+#include "wdttask.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
 
@@ -111,6 +112,9 @@ void I2CReceiveHandler(uint8_t rxByte)
                         break;
 
                     case REG_RESET:
+                        if (rxByte == DEVICE_RESET) {
+                            disableWDTReset();
+                        }
                         break;
 
                     default:

@@ -9,10 +9,12 @@
 #include "heartbeat.h"
 
 #include "led_utils.h"
+#include "wdt_atmega328p.h"
 #include "rtc_atmega328p.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
 #include "adctask.h"
+#include "wdttask.h"
 #include "version.h"
 
 void setup(void)
@@ -24,6 +26,7 @@ void setup(void)
 
 	setupLEDPin();
 	setupRTC();
+	setupWDT();
 	setupTWI();
 	setupADC();
 
@@ -44,9 +47,15 @@ int main(void)
 
 	initScheduler(NUM_TASKS);
 
+	registerTask(TASK_WDT, &wdtTask);
 	registerTask(TASK_HEARTBEAT, &HeartbeatTask);
 	registerTask(TASK_ADC, &ADCTask);
 
+	scheduleTask(
+			TASK_WDT, 
+			rtc_val_ms(250), 
+			NULL);
+			
 	scheduleTask(
 			TASK_HEARTBEAT,
 			rtc_val_ms(50),

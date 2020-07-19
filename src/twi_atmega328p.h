@@ -10,6 +10,8 @@
 #define I2C_RX_STATE_REGADDR        0x01
 #define I2C_RX_STATE_REGVALUE       0x02
 
+#define DEVICE_RESET                0xB6
+
 #define REG_RMS_WSIZE               0xF0
 #define REG_DB                      0xF2
 #define REG_RESET                   0xF4
