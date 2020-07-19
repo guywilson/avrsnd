@@ -10,12 +10,12 @@
 #include "rmslookup.h"
 #include "dbalookup.h"
 
-float dbA = 0.0;
+float db = 0.0;
 
-void getdbA(uint8_t * integerPart, uint8_t * fractionalPart)
+void getDB(uint8_t * integerPart, uint8_t * fractionalPart)
 {
-	*integerPart = (uint8_t)dbA;
-	*fractionalPart = (uint8_t)((dbA - (float)(*integerPart)) * 100);
+	*integerPart = (uint8_t)db;
+	*fractionalPart = (uint8_t)((db - (float)(*integerPart)) * 100);
 }
 
 void ADCTask(PTASKPARM p)
@@ -32,6 +32,6 @@ void ADCTask(PTASKPARM p)
 	if (i == RMS_AVG_SAMPLE_SIZE) {
 		avgRMS = rmsSum >> 7;
 
-		dbA = dbaLookup[avgRMS];
+		db = dbaLookup[avgRMS];
 	}
 }

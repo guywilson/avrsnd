@@ -18,8 +18,8 @@ typedef struct {
     uint8_t     rxData[I2C_RXTX_BUFFER_SIZE];
     uint8_t     txData[I2C_RXTX_BUFFER_SIZE];
 
-    int         txDataLength;
-    int         txRegAddress;
+    int         txrxDataLength;
+    int         regAddress;
 }
 TWI_PARAMS;
 

@@ -37,7 +37,9 @@
 
 #define triggerADC()                (ADCSRA |= _BV(ADSC))
 
-void setupADC(void);
-void handleADConversionComplete();
+void        setWindowSize(uint16_t windowSize);
+uint16_t    getWindowSize();
+void        setupADC(void);
+void        handleADConversionComplete();
 
 #endif

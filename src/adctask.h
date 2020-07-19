@@ -8,7 +8,7 @@
 
 #define getADCBitSize()					((uint8_t)ADC_BIT_SIZE)
 
-void 		getdbA(uint8_t * integerPart, uint8_t * fractionalPart);
+void 		getDB(uint8_t * integerPart, uint8_t * fractionalPart);
 void		ADCTask(PTASKPARM p);
 
 #endif

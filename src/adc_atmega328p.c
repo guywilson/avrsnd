@@ -13,6 +13,17 @@
 #define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
 
 static uint16_t peakValue = 0;
+static uint16_t rmsWindowSize = ADC_DEFAULT_WINDOW_SIZE;
+
+void setWindowSize(uint16_t windowSize)
+{
+	rmsWindowSize = windowSize;
+}
+
+uint16_t getWindowSize()
+{
+	return rmsWindowSize;
+}
 
 void setupADC(void)
 {
@@ -50,7 +61,7 @@ void handleADConversionComplete()
 	
 	triggerADC();
 
-	if (i == ADC_DEFAULT_WINDOW_SIZE) {
+	if (i == rmsWindowSize) {
 		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&peakValue);
 
 		i = 0;

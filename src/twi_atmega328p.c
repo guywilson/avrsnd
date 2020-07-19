@@ -40,11 +40,14 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <string.h>
 #include <util/twi.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <scheduler.h>
 
+#include "adctask.h"
+#include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
 
 TWI_PARAMS params;
@@ -59,14 +62,36 @@ void I2CReceiveHandler(uint8_t rxByte)
 {
     static int      state = I2C_RX_STATE_REGADDR;
     static int      i = 0;
+    uint16_t        windowSize;
+    uint8_t         dbIntPart;
+    uint8_t         dbFrtPart;
 
     switch (state) {
         case I2C_RX_STATE_REGADDR:
-            params.txRegAddress = rxByte;
+            params.regAddress = rxByte;
 
-            switch (params.txRegAddress) {
+            switch (params.regAddress) {
+                case REG_RMS_WSIZE:
+                    params.txrxDataLength = 2;
+                    windowSize = getWindowSize();
+                    memcpy(&params.txData, &windowSize, 2);
+                    break;
+
                 case REG_DB:
-                    params.txDataLength = 2;
+                    params.txrxDataLength = 2;
+                    getDB(&dbIntPart, &dbFrtPart);
+                    params.txData[0] = dbIntPart;
+                    params.txData[1] = dbFrtPart;
+                    break;
+
+                case REG_RESET:
+                    params.txrxDataLength = 1;
+                    break;
+
+                default:
+                    /*
+                    ** Error condition, unrecognised register address...
+                    */
                     break;
             }
 
@@ -75,13 +100,35 @@ void I2CReceiveHandler(uint8_t rxByte)
 
         case I2C_RX_STATE_REGVALUE:
             params.rxData[i++] = rxByte;
+
+            if (i == params.txrxDataLength) {
+                state = I2C_RX_STATE_REGADDR;
+                i = 0;
+
+                switch (params.regAddress) {
+                    case REG_RMS_WSIZE:
+                        setWindowSize((uint16_t)params.rxData[0]);
+                        break;
+
+                    case REG_RESET:
+                        break;
+
+                    default:
+                        /*
+                        ** Error condition, unrecognised register address...
+                        */
+                        break;
+                }
+            }
             break;
     }
 }
 
 void I2CTransmitHandler()
 {
+    static int      i = 0;
 
+    TWDR = params.txData[i++];
 }
 
 void handleTWI()
