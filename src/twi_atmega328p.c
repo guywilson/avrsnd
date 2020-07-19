@@ -1,3 +1,37 @@
+/******************************************************************************
+*
+* The avr device acts as a worker on the I2C bus at address 0x18
+*
+* It implements the following registers:
+*
+* Name                  Address     Size    R/W
+* ====================  =======     ======  ===
+* REG_RMS_WSIZE         0xF0        16-bit  R/W
+* REG_DB                0xF2        16-bit  R
+* REG_RESET             0xF4        8-bit   W
+*
+* I2C Write
+* ---------------------
+* 
+*  --- ------------------- --- --- --------------- --- --------------- --- ----
+* | S | Worker address    | W | A | Register addr | A | Register data | A | ST |
+*  --- ------------------- --- --- --------------- --- --------------- --- ----
+*
+* I2C Read
+* ---------------------
+* In order to read from a register, first the register address must be sent
+* in write mode.
+*
+*  --- ------------------- --- --- --------------- --- 
+* | S | Worker address    | W | A | Register addr | A |
+*  --- ------------------- --- --- --------------- --- 
+* 
+*  --- ------------------- --- --- --------------- --- --------------- --- ----
+* | S | Worker address    | R | A | Register data | A | Register data | A | ST |
+*  --- ------------------- --- --- --------------- --- --------------- --- ----
+*
+******************************************************************************/
+
 #include <stdint.h>
 #include <stddef.h>
 #include <util/twi.h>
@@ -7,7 +41,7 @@
 
 #include "twi_atmega328p.h"
 
-static uint8_t rxData[I2C_RX_BUFFER_SIZE];
+TWI_PARAMS params;
 
 void setupTWI()
 {
@@ -19,16 +53,14 @@ void I2CReceiveHandler(uint8_t rxByte)
 {
     static int      state = I2C_RX_STATE_REGADDR;
     static int      i = 0;
-    static int      dataLength;
-    static uint8_t  regAddress;
 
     switch (state) {
         case I2C_RX_STATE_REGADDR:
-            regAddress = rxByte;
+            params.txRegAddress = rxByte;
 
-            switch (regAddress) {
-                case I2C_REG_DBA:
-                    dataLength = 2;
+            switch (params.txRegAddress) {
+                case REG_DB:
+                    params.txDataLength = 2;
                     break;
             }
 
@@ -36,7 +68,7 @@ void I2CReceiveHandler(uint8_t rxByte)
             break;
 
         case I2C_RX_STATE_REGVALUE:
-            rxData[i++] = rxByte;
+            params.rxData[i++] = rxByte;
             break;
     }
 }

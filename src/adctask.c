@@ -10,7 +10,13 @@
 #include "rmslookup.h"
 #include "dbalookup.h"
 
-DECIMAL2DIGIT dbA = {0, 0};
+float dbA = 0.0;
+
+void getdbA(uint8_t * integerPart, uint8_t * fractionalPart)
+{
+	*integerPart = (uint8_t)dbA;
+	*fractionalPart = (uint8_t)((dbA - (float)(*integerPart)) * 100);
+}
 
 void ADCTask(PTASKPARM p)
 {

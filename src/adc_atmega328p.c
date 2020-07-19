@@ -50,7 +50,7 @@ void handleADConversionComplete()
 	
 	triggerADC();
 
-	if (i == ADC_WINDOW_SIZE) {
+	if (i == ADC_DEFAULT_WINDOW_SIZE) {
 		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&peakValue);
 
 		i = 0;
