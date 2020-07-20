@@ -58,7 +58,7 @@ int main(void)
 
 	scheduleTaskOnce(
 			TASK_HEARTBEAT,
-			rtc_val_ms(50),
+			rtc_val_sec(3),
 			NULL);
 
     /*
