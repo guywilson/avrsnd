@@ -12,7 +12,7 @@
 
 #define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
 
-static uint16_t peakValue = 0;
+static volatile uint16_t peakValue = 0;
 static uint16_t rmsWindowSize = ADC_DEFAULT_WINDOW_SIZE;
 
 void setWindowSize(uint16_t windowSize)
@@ -34,10 +34,10 @@ void setupADC(void)
 /*
 ** ADC Conversion complete interrupt handler
 */
-void handleADConversionComplete()
+ISR(ADC_vect, ISR_BLOCK)
 {
-	static int			i = 0;
-	uint16_t			value;
+	static int 			i = 0;
+	uint16_t register	value;
 	
 	/*
 	** 10-bit result from ADC

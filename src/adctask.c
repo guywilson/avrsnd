@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <scheduler.h>
 
 #include "adctask.h"
@@ -25,13 +26,13 @@ void ADCTask(PTASKPARM p)
 	uint32_t		avgRMS;
 	uint16_t 		peak = *(uint16_t *)p;
 
-	rmsSum += rmsLookup[peak];
+	rmsSum += pgm_read_word(rmsLookup[peak]);
 
 	i++;
 
 	if (i == RMS_AVG_SAMPLE_SIZE) {
 		avgRMS = rmsSum >> 7;
 
-		db = dbaLookup[avgRMS];
+		db = pgm_read_float(dbaLookup[avgRMS]);
 	}
 }

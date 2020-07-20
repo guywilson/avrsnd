@@ -189,9 +189,9 @@ ISR(USART_TX_vect, ISR_BLOCK) {
 /*
  * ADC Conversion Complete
  */
-ISR(ADC_vect, ISR_BLOCK) {
-	handleADConversionComplete();
-}
+// ISR(ADC_vect, ISR_BLOCK) {
+// 	handleADConversionComplete();
+// }
 
 /*
  * EEPROM Ready
@@ -210,9 +210,9 @@ ISR(ANALOG_COMP_vect, ISR_BLOCK) {
 /*
  * Two-wire Serial Interface
  */
-ISR(TWI_vect, ISR_BLOCK) {
-	handleTWI();
-}
+// ISR(TWI_vect, ISR_BLOCK) {
+// 	handleTWI();
+// }
 
 /*
  * Store Program Memory Read

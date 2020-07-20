@@ -135,7 +135,7 @@ void I2CTransmitHandler()
     TWDR = params.txData[i++];
 }
 
-void handleTWI()
+ISR(TWI_vect, ISR_BLOCK)
 {
     uint8_t     status;
 
