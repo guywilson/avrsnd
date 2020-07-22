@@ -33,7 +33,7 @@
 #define ADC_BIT_SIZE                10
 #define MAX_ADC_VALUE               1023
 
-#define ADC_DEFAULT_WINDOW_SIZE     256
+#define ADC_DEFAULT_WINDOW_SIZE     1024
 
 #define triggerADC()                (ADCSRA |= _BV(ADSC))
 

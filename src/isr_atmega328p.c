@@ -7,6 +7,7 @@
 #include "rtc_atmega328p.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
+#include "serial_atmega328p.h"
 
 /*
 ** Vector Num	Interrupt Definition					Vector Name
@@ -176,7 +177,7 @@ ISR(USART_RX_vect, ISR_BLOCK) {
  * USART Data Register Empty
  */
 ISR(USART_UDRE_vect, ISR_BLOCK) {
-	__defaultHandler();
+	handleDRE();
 }
 
 /*

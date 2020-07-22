@@ -1,3 +1,5 @@
+#define TEST_MODE
+
 #include <stddef.h>
 #include <stdint.h>
 #include <avr/io.h>
@@ -9,6 +11,11 @@
 #include "taskdef.h"
 #include "adc_atmega328p.h"
 #include "rmslookup.h"
+
+#ifdef TEST_MODE
+#include <avr/pgmspace.h>
+#include "testsamples.h"
+#endif
 
 #define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
 
@@ -37,14 +44,23 @@ void setupADC(void)
 ISR(ADC_vect, ISR_BLOCK)
 {
 	static int 			i = 0;
+	static int			j = 0;
 	uint16_t register	value;
 	
 	/*
 	** 10-bit result from ADC
 	** Read LSB first then MSB
 	*/
+#ifdef TEST_MODE
+	value = pgm_read_word(&testData[j++]);
+
+	if (j == 256) {
+		j = 0;
+	}
+#else
 	value = ADCL;
 	value |= ((ADCH & 0x03) << 8);
+#endif
 
 	/*
 	** Rectify our sample and zero reference, e.g. samples below the 'zero' point are
@@ -65,6 +81,5 @@ ISR(ADC_vect, ISR_BLOCK)
 		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&peakValue);
 
 		i = 0;
-		peakValue = 0;
 	}
 }

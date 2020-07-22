@@ -13,6 +13,7 @@
 #include "rtc_atmega328p.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
+#include "serial_atmega328p.h"
 #include "adctask.h"
 #include "wdttask.h"
 #include "version.h"
@@ -29,6 +30,7 @@ void setup(void)
 	setupWDT();
 	setupTWI();
 	setupADC();
+	setupSerial();
 
 	/*
 	 * Enable interrupts...
@@ -43,7 +45,7 @@ int main(void)
 	/*
 	 * Switch on the LED so we know when the board has reset...
 	 */
-	turnOn(LED_ONBOARD);
+//	turnOn(LED_ONBOARD);
 
 	initScheduler(NUM_TASKS);
 
@@ -56,10 +58,10 @@ int main(void)
 			rtc_val_ms(125), 
 			NULL);
 
-	scheduleTaskOnce(
-			TASK_HEARTBEAT,
-			rtc_val_sec(3),
-			NULL);
+	// scheduleTaskOnce(
+	// 		TASK_HEARTBEAT,
+	// 		rtc_val_sec(3),
+	// 		NULL);
 
     /*
      * Trigger the first ADC conversion...
