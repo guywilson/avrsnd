@@ -1,5 +1,3 @@
-#define TEST_MODE
-
 #include <stddef.h>
 #include <stdint.h>
 #include <avr/io.h>
@@ -12,12 +10,21 @@
 #include "adc_atmega328p.h"
 #include "rmslookup.h"
 
+#define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
+
+/*
+** If TEST_MODE is defined, our 'samples' are taken from
+** testsamples.h which defines samples of a perfect sine
+** wave (from ADC_Sample_Generator.xlsx)...
+*/
+#define TEST_MODE
+
 #ifdef TEST_MODE
 #include <avr/pgmspace.h>
 #include "testsamples.h"
-#endif
 
-#define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
+static int sampleCounter = 0;
+#endif
 
 static volatile uint16_t peakValue = 0;
 static uint16_t rmsWindowSize = ADC_DEFAULT_WINDOW_SIZE;
@@ -44,20 +51,19 @@ void setupADC(void)
 ISR(ADC_vect, ISR_BLOCK)
 {
 	static int 			i = 0;
-	static int			j = 0;
 	uint16_t register	value;
 	
+#ifdef TEST_MODE
+	value = pgm_read_word(&testData[sampleCounter++]);
+
+	if (sampleCounter == TEST_SAMPLE_SIZE) {
+		sampleCounter = 0;
+	}
+#else
 	/*
 	** 10-bit result from ADC
 	** Read LSB first then MSB
 	*/
-#ifdef TEST_MODE
-	value = pgm_read_word(&testData[j++]);
-
-	if (j == 256) {
-		j = 0;
-	}
-#else
 	value = ADCL;
 	value |= ((ADCH & 0x03) << 8);
 #endif

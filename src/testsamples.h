@@ -4,7 +4,9 @@
 #ifndef _INCL_TESTSAMPLES
 #define _INCL_TESTSAMPLES
 
-static uint16_t const testData[256] PROGMEM =
+#define TEST_SAMPLE_SIZE                    256
+
+static uint16_t const testData[TEST_SAMPLE_SIZE] PROGMEM =
 {
 511,
 586,
