@@ -39,7 +39,7 @@ PRECOMPILE = @ mkdir -p $(BUILD) $(DEP)
 # postcompile step
 POSTCOMPILE = @ mv -f $(DEP)/$*.Td $(DEP)/$*.d
 
-CFLAGS = -c -O2 -Wall -ffunction-sections -fdata-sections -mmcu=$(DEVICE) -DF_CPU=16000000L -DARDUINO=10804 -D$(BOARD) -DARDUINO_ARCH_AVR -DARCH_SIZE=$(ARCHSIZE)
+CFLAGS = -c -O1 -Wall -ffunction-sections -fdata-sections -mmcu=$(DEVICE) -DF_CPU=16000000L -DARDUINO=10804 -D$(BOARD) -DARDUINO_ARCH_AVR -DARCH_SIZE=$(ARCHSIZE)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 LFLAGS = -fuse-linker-plugin -Wl,--gc-sections -mmcu=$(DEVICE)
 OBJCOPYFLAGS = -O ihex -R .eeprom

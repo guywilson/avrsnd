@@ -8,7 +8,6 @@
 #include "adctask.h"
 #include "taskdef.h"
 #include "adc_atmega328p.h"
-#include "rmslookup.h"
 
 #define ADC_ZERO_POINT					(MAX_ADC_VALUE >> 1)
 
@@ -17,7 +16,7 @@
 ** testsamples.h which defines samples of a perfect sine
 ** wave (from ADC_Sample_Generator.xlsx)...
 */
-#define TEST_MODE
+//#define TEST_MODE
 
 #ifdef TEST_MODE
 #include <avr/pgmspace.h>

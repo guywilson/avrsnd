@@ -13,8 +13,8 @@
 #define DEVICE_RESET                0xB6
 
 #define REG_RMS_WSIZE               0xF0
-#define REG_DB                      0xF2
-#define REG_RESET                   0xF4
+#define REG_LOUDNESS                0xF2
+#define REG_RESET                   0xF3
 
 typedef struct {
     uint8_t     rxData[I2C_RXTX_BUFFER_SIZE];

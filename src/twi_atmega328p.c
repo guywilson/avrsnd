@@ -4,11 +4,11 @@
 *
 * It implements the following registers:
 *
-* Name                  Address     Size    R/W
-* ====================  =======     ======  ===
-* REG_RMS_WSIZE         0xF0        16-bit  R/W
-* REG_DB                0xF2        16-bit  R
-* REG_RESET             0xF4        8-bit   W
+* Name                  Address     Size    R/W Remarks
+* ====================  =======     ======  === ===============================
+* REG_RMS_WSIZE         0xF0        16-bit  R/W No. of samples to measure peak
+* REG_LOUDNESS          0xF2        8-bit   R   The relative loudness 0 - 255   
+* REG_RESET             0xF3        8-bit   W   Send 0xB6 to reset the device
 *
 * I2C Write
 * ---------------------
@@ -64,8 +64,6 @@ void I2CReceiveHandler(uint8_t rxByte)
     static int      state = I2C_RX_STATE_REGADDR;
     static int      i = 0;
     uint16_t        windowSize;
-    uint8_t         dbIntPart;
-    uint8_t         dbFrtPart;
 
     switch (state) {
         case I2C_RX_STATE_REGADDR:
@@ -78,11 +76,9 @@ void I2CReceiveHandler(uint8_t rxByte)
                     memcpy(&params.txData, &windowSize, 2);
                     break;
 
-                case REG_DB:
-                    params.txrxDataLength = 2;
-                    getDB(&dbIntPart, &dbFrtPart);
-                    params.txData[0] = dbIntPart;
-                    params.txData[1] = dbFrtPart;
+                case REG_LOUDNESS:
+                    params.txrxDataLength = 1;
+                    params.txData[0] = getLoudness();
                     break;
 
                 case REG_RESET:
@@ -132,7 +128,9 @@ void I2CTransmitHandler()
 {
     static int      i = 0;
 
-    TWDR = params.txData[i++];
+    if (i < params.txrxDataLength) {
+        TWDR = params.txData[i++];
+    }
 }
 
 ISR(TWI_vect, ISR_BLOCK)

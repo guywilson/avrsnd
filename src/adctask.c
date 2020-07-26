@@ -1,3 +1,5 @@
+//#define SERIAL_TEST
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,25 +11,27 @@
 #include "adctask.h"
 #include "taskdef.h"
 #include "adc_atmega328p.h"
+#include "loudness.h"
+
+#ifdef SERIAL_TEST
 #include "serial_atmega328p.h"
-#include "rmslookup.h"
-#include "dbalookup.h"
 
-float db = 0.0;
 char dbStr[32];
+#endif
 
-void getDB(uint8_t * integerPart, uint8_t * fractionalPart)
+uint8_t avgLoudness = 0;
+
+uint8_t getLoudness()
 {
-	*integerPart = (uint8_t)db;
-	*fractionalPart = (uint8_t)((db - (float)(*integerPart)) * 100);
+	return avgLoudness;
 }
 
 void ADCTask(PTASKPARM p)
 {
 	static int		i = 0;
 	static int		on = 0;
-	static uint32_t	rmsSum = 0;
-	uint32_t		avgRMS;
+	static uint16_t	loudnessSum = 0;
+	uint8_t			loudness = 0;
 	uint16_t *		pPeak = (uint16_t *)p;
 
 	if (on) {
@@ -39,23 +43,24 @@ void ADCTask(PTASKPARM p)
 		on = 1;
 	}
 
-	rmsSum += pgm_read_word(&rmsLookup[*pPeak]);
+	loudness = pgm_read_word(&loudnessLookup[*pPeak - 1]);
+	loudnessSum += loudness;
 
 	i++;
 
-	if (i == RMS_AVG_SAMPLE_SIZE) {
+	if (i == LOUDNESS_AVG_SAMPLE_SIZE) {
 		i = 0;
 
-		avgRMS = rmsSum >> 6;
+		avgLoudness = (uint8_t)(loudnessSum >> LOUDNESS_AVG_BITSHIFT);
 
-		db = pgm_read_float(&dbaLookup[avgRMS]);
-
-		itoa((int)db, dbStr, 10);
+#ifdef SERIAL_TEST
+		itoa((int)avgLoudness, dbStr, 10);
 		dbStr[strlen(dbStr)] = '\n';
 
 		txstr(dbStr, strlen(dbStr));
+#endif
 
-		rmsSum = 0;
+		loudnessSum = 0;
 		*pPeak = 0;
 	}
 }
