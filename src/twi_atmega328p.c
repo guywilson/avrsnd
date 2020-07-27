@@ -41,6 +41,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 #include <util/twi.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -50,8 +51,11 @@
 #include "wdttask.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
+#include "serial_atmega328p.h"
 
 TWI_PARAMS params;
+
+char buffer[32];
 
 void setupTWI()
 {
@@ -59,30 +63,107 @@ void setupTWI()
     TWCR = _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWINT);
 }
 
-void I2CReceiveHandler(uint8_t rxByte)
+int getRegisterSize(uint8_t registerAddress)
 {
-    static int      state = I2C_RX_STATE_REGADDR;
-    static int      i = 0;
-    uint16_t        windowSize;
+    int         registerSize = 0;
 
-    switch (state) {
-        case I2C_RX_STATE_REGADDR:
-            params.regAddress = rxByte;
+    switch (registerAddress) {
+        case REG_RMS_WSIZE:
+            registerSize = 2;
+            break;
 
+        case REG_LOUDNESS:
+            registerSize = 1;
+            break;
+
+        case REG_RESET:
+            registerSize = 1;
+            break;
+
+        default:
+            /*
+            ** Error condition, unrecognised register address...
+            */
+            registerSize = -1;
+            break;
+    }
+
+    return registerSize;
+}
+
+ISR(TWI_vect, ISR_BLOCK)
+{
+    static int  state = I2C_RX_STATE_REGADDR;
+    static int  rxDataIt = 0;
+    static int  txDataIt = 0;
+    uint16_t    windowSize;
+    uint8_t     i2cStatus;
+
+    i2cStatus = (TWSR & 0xF8);
+
+    switch (i2cStatus) {
+        case TW_SR_SLA_ACK:
+            state = I2C_RX_STATE_REGADDR;
+            break;
+
+        case TW_SR_DATA_ACK:            // Writing to a register...
+            switch (state) {
+                case I2C_RX_STATE_REGADDR:
+                    params.regAddress = TWDR;
+                    params.txrxDataLength = getRegisterSize(params.regAddress);
+                    state = I2C_RX_STATE_REGVALUE;
+                    break;
+
+                case I2C_RX_STATE_REGVALUE:
+                    params.rxData[rxDataIt++] = TWDR;
+
+                    if (rxDataIt == params.txrxDataLength) {
+                        state = I2C_RX_STATE_END;
+                        rxDataIt = 0;
+                    }
+
+                    switch (params.regAddress) {
+                        case REG_RMS_WSIZE:
+                            memcpy(&windowSize, &params.txData, 2);
+                            break;
+
+                        case REG_RESET:
+                            if (params.rxData[0] == DEVICE_RESET) {
+                                disableWDTReset();
+                            }
+                            break;
+
+                        default:
+                            /*
+                            ** Error condition, unrecognised register address...
+                            */
+                            break;
+                    }
+                    break;
+
+                case I2C_RX_STATE_END:
+                    state = I2C_RX_STATE_REGADDR;
+                    break;
+            }
+            break;
+
+        case TW_SR_STOP:
+            state = I2C_RX_STATE_REGADDR;
+            break;
+
+        case TW_ST_SLA_ACK:                 // Reading from a register...
             switch (params.regAddress) {
                 case REG_RMS_WSIZE:
-                    params.txrxDataLength = 2;
                     windowSize = getWindowSize();
                     memcpy(&params.txData, &windowSize, 2);
                     break;
 
                 case REG_LOUDNESS:
-                    params.txrxDataLength = 1;
                     params.txData[0] = getLoudness();
-                    break;
-
-                case REG_RESET:
-                    params.txrxDataLength = 1;
+                    strcpy(buffer, "TX loudness value: ");
+                    itoa((int)params.txData[0], &buffer[19], 10);
+                    buffer[strlen(buffer)] = '\n';
+                    txstr(buffer, strlen(buffer));
                     break;
 
                 default:
@@ -92,70 +173,27 @@ void I2CReceiveHandler(uint8_t rxByte)
                     break;
             }
 
-            state = I2C_RX_STATE_REGVALUE;
-            break;
+            /*
+            ** Send data back to the manager...
+            */
+            TWDR = params.txData[txDataIt++];
 
-        case I2C_RX_STATE_REGVALUE:
-            params.rxData[i++] = rxByte;
-
-            if (i == params.txrxDataLength) {
-                state = I2C_RX_STATE_REGADDR;
-                i = 0;
-
-                switch (params.regAddress) {
-                    case REG_RMS_WSIZE:
-                        setWindowSize((uint16_t)params.rxData[0]);
-                        break;
-
-                    case REG_RESET:
-                        if (rxByte == DEVICE_RESET) {
-                            disableWDTReset();
-                        }
-                        break;
-
-                    default:
-                        /*
-                        ** Error condition, unrecognised register address...
-                        */
-                        break;
-                }
+            if (txDataIt == params.txrxDataLength) {
+                txDataIt = 0;
             }
-            break;
-    }
-}
-
-void I2CTransmitHandler()
-{
-    static int      i = 0;
-
-    if (i < params.txrxDataLength) {
-        TWDR = params.txData[i++];
-    }
-}
-
-ISR(TWI_vect, ISR_BLOCK)
-{
-    uint8_t     status;
-
-    status = (TWSR & 0xF8);
-
-    switch (status) {
-        case TW_SR_DATA_ACK:
-            I2CReceiveHandler(TWDR); 
-            break;
-
-        case TW_ST_SLA_ACK:
-            I2CTransmitHandler();
             break;
 
         case TW_ST_DATA_ACK:
-            I2CTransmitHandler();
+            state = I2C_RX_STATE_REGADDR;
             break;
 
-        case TW_BUS_ERROR:
-            TWCR = 0;
+        case TW_ST_DATA_NACK:    // 0xC0: data transmitted, NACK received
+        case TW_ST_LAST_DATA:    // 0xC8: last data byte transmitted, ACK received
+        case TW_BUS_ERROR:       // 0x00: illegal start or stop condition
+        default:
+            state = I2C_RX_STATE_REGADDR;
             break;
     }
 
-    TWCR = _BV(TWEA) | _BV(TWEN) | _BV(TWIE) | _BV(TWINT);
+    TWCR |= _BV(TWINT);
 }

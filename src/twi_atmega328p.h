@@ -9,6 +9,7 @@
 
 #define I2C_RX_STATE_REGADDR        0x01
 #define I2C_RX_STATE_REGVALUE       0x02
+#define I2C_RX_STATE_END            0x03
 
 #define DEVICE_RESET                0xB6
 
