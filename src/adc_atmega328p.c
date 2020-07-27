@@ -25,12 +25,24 @@
 static int sampleCounter = 0;
 #endif
 
-static volatile uint16_t peakValue = 0;
-static uint16_t rmsWindowSize = ADC_DEFAULT_WINDOW_SIZE;
+static volatile uint16_t 	peakValue = 0;
+static volatile int			windowCounter = 0;
+static uint16_t 			rmsWindowSize = ADC_DEFAULT_WINDOW_SIZE;
 
 void setWindowSize(uint16_t windowSize)
 {
+	/*
+	** Reset ADC handler...
+	*/
+	cli();
+	ADCSRA = 0x00;
 	rmsWindowSize = windowSize;
+	windowCounter = 0;
+	peakValue = 0;
+	sei();
+
+	setupADC();
+	triggerADC();
 }
 
 uint16_t getWindowSize()
@@ -49,7 +61,6 @@ void setupADC(void)
 */
 ISR(ADC_vect, ISR_BLOCK)
 {
-	static int 			i = 0;
 	uint16_t register	value;
 	
 #ifdef TEST_MODE
@@ -78,13 +89,13 @@ ISR(ADC_vect, ISR_BLOCK)
 		peakValue = value;
 	}
 
-	i++;
+	windowCounter++;
 	
 	triggerADC();
 
-	if (i == rmsWindowSize) {
+	if (windowCounter == rmsWindowSize) {
 		scheduleTaskOnce(TASK_ADC, RUN_NOW, (PTASKPARM)&peakValue);
 
-		i = 0;
+		windowCounter = 0;
 	}
 }

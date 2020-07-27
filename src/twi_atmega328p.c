@@ -129,6 +129,7 @@ ISR(TWI_vect, ISR_BLOCK)
                     switch (params.regAddress) {
                         case REG_RMS_WSIZE:
                             memcpy(&windowSize, &params.txData, 2);
+                            setWindowSize(windowSize);
                             break;
 
                         case REG_RESET:
