@@ -7,7 +7,6 @@
 #include <avr/pgmspace.h>
 #include <scheduler.h>
 
-#include "led_utils.h"
 #include "adctask.h"
 #include "taskdef.h"
 #include "adc_atmega328p.h"
@@ -29,19 +28,9 @@ uint8_t getLoudness()
 void ADCTask(PTASKPARM p)
 {
 	static int		i = 0;
-	static int		on = 0;
 	static uint16_t	loudnessSum = 0;
 	uint8_t			loudness = 0;
 	uint16_t *		pPeak = (uint16_t *)p;
-
-	if (on) {
-		turnOff(LED_ONBOARD);
-		on = 0;
-	}
-	else {
-		turnOn(LED_ONBOARD);
-		on = 1;
-	}
 
 	loudness = pgm_read_word(&loudnessLookup[*pPeak - 1]);
 	loudnessSum += loudness;

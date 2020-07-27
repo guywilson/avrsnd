@@ -37,6 +37,7 @@
 *  --- ------------------- --- --- --------------- --- --------------- --- ----
 *
 ******************************************************************************/
+//#define SERIAL_DEBUG
 
 #include <stdint.h>
 #include <stddef.h>
@@ -51,11 +52,14 @@
 #include "wdttask.h"
 #include "adc_atmega328p.h"
 #include "twi_atmega328p.h"
+
+#ifdef SERIAL_DEBUG
 #include "serial_atmega328p.h"
 
-TWI_PARAMS params;
-
 char buffer[32];
+#endif
+
+TWI_PARAMS params;
 
 void setupTWI()
 {
@@ -160,10 +164,12 @@ ISR(TWI_vect, ISR_BLOCK)
 
                 case REG_LOUDNESS:
                     params.txData[0] = getLoudness();
+#ifdef SERIAL_DEBUG
                     strcpy(buffer, "TX loudness value: ");
                     itoa((int)params.txData[0], &buffer[19], 10);
                     buffer[strlen(buffer)] = '\n';
                     txstr(buffer, strlen(buffer));
+#endif
                     break;
 
                 default:

@@ -45,7 +45,7 @@ int main(void)
 	/*
 	 * Switch on the LED so we know when the board has reset...
 	 */
-//	turnOn(LED_ONBOARD);
+	turnOn(LED_ONBOARD);
 
 	initScheduler(NUM_TASKS);
 
@@ -58,10 +58,10 @@ int main(void)
 			rtc_val_ms(125), 
 			NULL);
 
-	// scheduleTaskOnce(
-	// 		TASK_HEARTBEAT,
-	// 		rtc_val_sec(3),
-	// 		NULL);
+	scheduleTaskOnce(
+			TASK_HEARTBEAT,
+			rtc_val_sec(3),
+			NULL);
 
     /*
      * Trigger the first ADC conversion...
